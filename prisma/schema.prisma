@@ -4,11 +4,71 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Plant {
+  id          String      @id @default(cuid())
+  name        String
+  location    String?
+  description String? 
+  processes   Process[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Process {
+  id          String       @id @default(cuid())
+  name        String
+  description String? 
+  plant       Plant     @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  plantId     String
+  subprocesses Subprocess[]
+  machines    Machine[]
+}
+
+model Subprocess {
+  id        String    @id @default(cuid())
+  name      String
+  description String? 
+  process     Process   @relation(fields: [processId], references: [id], onDelete: Cascade)
+  processId String
+  machines  Machine[]
+}
+
+model Machine {
+  id            String             @id @default(cuid())
+  code          String
+  name          String
+  manufacturer  String?
+  model         String?
+  serial        String?
+  availability  Float              @default(0)
+  mtbf          Float              @default(0)
+  mttr          Float              @default(0)
+  totalOts      Int                @default(0)
+  openOts       Int                @default(0)
+  subprocess   Subprocess? @relation(fields: [subprocessId], references: [id], onDelete: Cascade)
+  subprocessId  String?
+  process      Process?    @relation(fields: [processId], references: [id], onDelete: Cascade)
+  processId     String?
+  documents     MachineDocument[]
+}
+
+model MachineDocument {
+  id         String   @id @default(cuid())
+  machine    Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  machineId  String
+  name       String
+  mimeType   String
+  // Puedes guardar Base64 o path del archivo
+  base64Data String?
+  filePath   String?
+  uploadedAt DateTime @default(now())
 }
