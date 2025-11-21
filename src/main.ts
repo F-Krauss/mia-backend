@@ -10,11 +10,18 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
+  const allowedOrigins = [
+    'http://localhost:3001',
+    'http://127.0.0.1:5173',
+    'https://mia.t-efficiency.com',   // o el subdominio que estés usando
+  ];
+
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://127.0.0.1:5173'],
+    origin: allowedOrigins,
     credentials: true,
   });
 
-  await app.listen(3000);
+  const port = parseInt(process.env.PORT ?? '4000', 10); // nos movemos a 4000
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
