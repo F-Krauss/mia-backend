@@ -10,11 +10,19 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-  const allowedOrigins = [
+  const defaultAllowedOrigins = [
+    'http://localhost:3000', // Vite dev (configured port)
     'http://localhost:3001',
     'http://127.0.0.1:5173',
-    'https://mia.t-efficiency.com',   // o el subdominio que estés usando
+    'https://mia.t-efficiency.com', // o el subdominio que estés usando
   ];
+
+  const extraAllowedOrigins = (process.env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+  const allowedOrigins = [...defaultAllowedOrigins, ...extraAllowedOrigins];
 
   app.enableCors({
     origin: allowedOrigins,
