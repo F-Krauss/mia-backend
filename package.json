@@ -28,6 +28,8 @@
     "@nestjs/serve-static": "^5.0.4",
     "@prisma/client": "^5.22.0",
     "class-validator": "^0.14.2",
+    "firebase-admin": "^12.0.0",
+    "firebaseui": "^6.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

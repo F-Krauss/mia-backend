@@ -13,6 +13,7 @@ async function bootstrap() {
   const defaultAllowedOrigins = [
     'http://localhost:3000', // Vite dev (configured port)
     'http://localhost:3001',
+    'http://192.168.1.13:3000', // IP local dev machine
     'http://127.0.0.1:5173',
     'https://mia.t-efficiency.com', // o el subdominio que estés usando
   ];
@@ -25,7 +26,10 @@ async function bootstrap() {
   const allowedOrigins = [...defaultAllowedOrigins, ...extraAllowedOrigins];
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin:
+      process.env.ALLOW_ALL_CORS === 'true'
+        ? true
+        : allowedOrigins,
     credentials: true,
   });
 

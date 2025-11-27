@@ -13,52 +13,83 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum WorkOrderStatus {
+  unassigned
+  assigned
+  in_progress
+  on_hold
+  testing
+  closed
+  cancelled
+}
+
+enum WorkOrderPriority {
+  P1
+  P2
+  P3
+}
+
+enum RiskLevel {
+  Bajo
+  Medio
+  Alto
+}
+
+enum AiMatch {
+  yes
+  no
+}
+
 model Plant {
   id          String      @id @default(cuid())
   name        String
   location    String?
-  description String? 
+  description String?
   processes   Process[]
+  workOrders  WorkOrder[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
 
 model Process {
-  id          String       @id @default(cuid())
-  name        String
-  description String? 
-  plant       Plant     @relation(fields: [plantId], references: [id], onDelete: Cascade)
-  plantId     String
+  id           String       @id @default(cuid())
+  name         String
+  description  String?
+  plant        Plant        @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  plantId      String
   subprocesses Subprocess[]
-  machines    Machine[]
+  machines     Machine[]
+  workOrders   WorkOrder[]
 }
 
 model Subprocess {
-  id        String    @id @default(cuid())
-  name      String
-  description String? 
-  process     Process   @relation(fields: [processId], references: [id], onDelete: Cascade)
-  processId String
-  machines  Machine[]
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  process     Process     @relation(fields: [processId], references: [id], onDelete: Cascade)
+  processId   String
+  machines    Machine[]
+  workOrders  WorkOrder[]
 }
 
 model Machine {
-  id            String             @id @default(cuid())
-  code          String
-  name          String
-  manufacturer  String?
-  model         String?
-  serial        String?
-  availability  Float              @default(0)
-  mtbf          Float              @default(0)
-  mttr          Float              @default(0)
-  totalOts      Int                @default(0)
-  openOts       Int                @default(0)
-  subprocess   Subprocess? @relation(fields: [subprocessId], references: [id], onDelete: Cascade)
-  subprocessId  String?
-  process      Process?    @relation(fields: [processId], references: [id], onDelete: Cascade)
-  processId     String?
-  documents     MachineDocument[]
+  id           String            @id @default(cuid())
+  code         String
+  name         String
+  manufacturer String?
+  model        String?
+  serial       String?
+  availability Float             @default(0)
+  mtbf         Float             @default(0)
+  mttr         Float             @default(0)
+  totalOts     Int               @default(0)
+  openOts      Int               @default(0)
+  subprocess   Subprocess?       @relation(fields: [subprocessId], references: [id], onDelete: Cascade)
+  subprocessId String?
+  process      Process?          @relation(fields: [processId], references: [id], onDelete: Cascade)
+  processId    String?
+  documents    MachineDocument[]
+  workOrders   WorkOrder[]
 }
 
 model MachineDocument {
@@ -71,4 +102,83 @@ model MachineDocument {
   base64Data String?
   filePath   String?
   uploadedAt DateTime @default(now())
+}
+
+model WorkOrder {
+  id              String           @id @default(cuid())
+  otNumber        String           @unique
+  plant           Plant?           @relation(fields: [plantId], references: [id], onDelete: SetNull)
+  plantId         String?
+  process         Process?         @relation(fields: [processId], references: [id], onDelete: SetNull)
+  processId       String?
+  subprocess      Subprocess?      @relation(fields: [subprocessId], references: [id], onDelete: SetNull)
+  subprocessId    String?
+  machine         Machine?         @relation(fields: [machineId], references: [id], onDelete: SetNull)
+  machineId       String?
+  plantName       String
+  processName     String
+  subprocessName  String
+  machineCode     String
+  machineName     String
+  reportDate      DateTime
+  detectorName    String
+  shift           String
+  requestType     String
+  machineStatus   String
+  description     String
+  symptoms        String[]
+  aiData          WorkOrderAIData?
+  technicalReport TechnicalReport?
+  status          WorkOrderStatus
+  assignedTo      String?
+  slaTarget       DateTime
+  logs            WorkOrderLog[]
+  startedAt       DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model WorkOrderAIData {
+  id                   String            @id @default(cuid())
+  classification       String
+  priority             WorkOrderPriority
+  riskLevel            RiskLevel
+  productionImpact     String
+  qualityImpact        Boolean
+  operatorInstructions String
+  rootCauses           Json
+  suggestedActions     String[]
+  workOrder            WorkOrder         @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workOrderId          String            @unique
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+}
+
+model TechnicalReport {
+  id                 String    @id @default(cuid())
+  inspections        String?
+  measurements       String?
+  diagnosis          String?
+  aiMatch            AiMatch?
+  rootCause          String?
+  actions            String[]  @default([])
+  otherActionDetail  String?
+  supplies           String?
+  preventiveMeasures String?
+  workOrder          WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workOrderId        String    @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model WorkOrderLog {
+  id          String    @id @default(cuid())
+  date        DateTime
+  action      String
+  user        String
+  comment     String?
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workOrderId String
+  createdAt   DateTime  @default(now())
 }

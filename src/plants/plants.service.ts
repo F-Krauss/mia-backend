@@ -74,9 +74,57 @@ export class PlantsService {
   }
 
   async remove(id: string) {
-    // Ojo: para que esto borre procesos/subprocesos/máquinas, necesitas
-    // que en schema.prisma las relaciones tengan onDelete: Cascade.
-    await this.prisma.plant.delete({ where: { id } });
+    // Manual cascade to avoid FK issues when referential actions aren't migrated
+    await this.prisma.$transaction(async (tx) => {
+      // limpiar referencias de OT a la planta
+      await tx.workOrder.updateMany({
+        where: { plantId: id },
+        data: { plantId: null },
+      });
+
+      // obtener procesos/subprocesos/máquinas bajo la planta
+      const processes = await tx.process.findMany({
+        where: { plantId: id },
+        select: {
+          id: true,
+          machines: { select: { id: true } },
+          subprocesses: {
+            select: {
+              id: true,
+              machines: { select: { id: true } },
+            },
+          },
+        },
+      });
+
+      const processIds = processes.map((p) => p.id);
+      const subprocessIds = processes.flatMap((p) =>
+        p.subprocesses.map((s) => s.id),
+      );
+      const machineIds = [
+        ...processes.flatMap((p) => p.machines.map((m) => m.id)),
+        ...processes.flatMap((p) =>
+          p.subprocesses.flatMap((s) => s.machines.map((m) => m.id)),
+        ),
+      ];
+
+      if (machineIds.length) {
+        await tx.machineDocument.deleteMany({
+          where: { machineId: { in: machineIds } },
+        });
+        await tx.machine.deleteMany({ where: { id: { in: machineIds } } });
+      }
+
+      if (subprocessIds.length) {
+        await tx.subprocess.deleteMany({ where: { id: { in: subprocessIds } } });
+      }
+
+      if (processIds.length) {
+        await tx.process.deleteMany({ where: { id: { in: processIds } } });
+      }
+
+      await tx.plant.delete({ where: { id } });
+    });
   }
 
   // ---------- PROCESSES ----------
