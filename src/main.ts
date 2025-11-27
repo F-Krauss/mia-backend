@@ -6,6 +6,9 @@ import * as bodyParser from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Prefix all routes with /api for consistent frontend/backend paths
+  app.setGlobalPrefix('api');
+
   // Aumentar límite de tamaño de body
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
