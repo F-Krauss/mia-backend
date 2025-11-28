@@ -10,8 +10,13 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 export class DocumentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(params?: { parentId?: string; parentType?: string }) {
-    const where = this.buildParentWhere(params);
+  findAll(params?: { parentId?: string; parentType?: string; certificationDocument?: string | boolean }) {
+    const where = {
+      ...this.buildParentWhere(params),
+      ...(params?.certificationDocument !== undefined
+        ? { certificationDocument: params.certificationDocument === 'true' || params.certificationDocument === true }
+        : {}),
+    };
     return this.prisma.controlledDocument.findMany({
       where,
       orderBy: [{ code: 'asc' }, { version: 'desc' }],

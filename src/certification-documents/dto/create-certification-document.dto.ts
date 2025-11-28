@@ -9,4 +9,5 @@ export class CreateCertificationDocumentDto {
   fileUrl?: string | null;
   fileBase64?: string | null;
   fileName?: string | null;
+  certificationDocument?: boolean;
 }

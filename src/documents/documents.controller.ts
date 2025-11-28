@@ -20,8 +20,9 @@ export class DocumentsController {
   findAll(
     @Query('parentId') parentId?: string,
     @Query('parentType') parentType?: string,
+    @Query('certificationDocument') certificationDocument?: string,
   ) {
-    return this.documentsService.findAll({ parentId, parentType });
+    return this.documentsService.findAll({ parentId, parentType, certificationDocument });
   }
 
   @Get(':id')
