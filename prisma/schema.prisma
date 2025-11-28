@@ -46,6 +46,7 @@ model Plant {
   location    String?
   description String?
   processes   Process[]
+  controlledDocuments ControlledDocument[]
   workOrders  WorkOrder[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -59,6 +60,8 @@ model Process {
   plantId      String
   subprocesses Subprocess[]
   machines     Machine[]
+  procedures   Procedure[]
+  controlledDocuments ControlledDocument[]
   workOrders   WorkOrder[]
 }
 
@@ -69,6 +72,8 @@ model Subprocess {
   process     Process     @relation(fields: [processId], references: [id], onDelete: Cascade)
   processId   String
   machines    Machine[]
+  procedures  Procedure[]
+  controlledDocuments ControlledDocument[]
   workOrders  WorkOrder[]
 }
 
@@ -89,7 +94,32 @@ model Machine {
   process      Process?          @relation(fields: [processId], references: [id], onDelete: Cascade)
   processId    String?
   documents    MachineDocument[]
+  controlledDocuments ControlledDocument[]
   workOrders   WorkOrder[]
+}
+
+model ControlledDocument {
+  id          String     @id @default(cuid())
+  code        String
+  name        String
+  type        String
+  version     String
+  status      String
+  nextReview  DateTime?
+  owner       String?
+  fileUrl     String?
+  fileBase64  String?
+  fileName    String?
+  plant       Plant?     @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  plantId     String?
+  process     Process?   @relation(fields: [processId], references: [id], onDelete: Cascade)
+  processId   String?
+  subprocess  Subprocess? @relation(fields: [subprocessId], references: [id], onDelete: Cascade)
+  subprocessId String?
+  machine     Machine?   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  machineId   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model MachineDocument {
@@ -102,6 +132,67 @@ model MachineDocument {
   base64Data String?
   filePath   String?
   uploadedAt DateTime @default(now())
+}
+
+model CertificationDocument {
+  id         String   @id @default(cuid())
+  code       String
+  name       String
+  type       String
+  version    String
+  status     String
+  nextReview DateTime?
+  owner      String
+  fileUrl    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([code, version])
+}
+
+model Procedure {
+  id             String                @id @default(cuid())
+  title          String
+  description    String?
+  reviewer       String?
+  responsible    String?
+  notifyEmail    Boolean               @default(false)
+  notifyWhatsapp Boolean               @default(false)
+  status         String                @default("active")
+  process        Process?              @relation(fields: [processId], references: [id], onDelete: Cascade)
+  processId      String?
+  subprocess     Subprocess?           @relation(fields: [subprocessId], references: [id], onDelete: Cascade)
+  subprocessId   String?
+  documents      ProcedureDocument[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+}
+
+model ProcedureDocument {
+  id          String                     @id @default(cuid())
+  code        String
+  name        String
+  procedure   Procedure                  @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  procedureId String
+  versions    ProcedureDocumentVersion[]
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+
+  @@unique([procedureId, code])
+}
+
+model ProcedureDocumentVersion {
+  id          String             @id @default(cuid())
+  version     String
+  fileUrl     String?
+  fileBase64  String?
+  fileName    String?
+  uploadDate  DateTime           @default(now())
+  renewalDate DateTime?
+  status      String             @default("in_review")
+  updatedBy   String?
+  document    ProcedureDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  String
 }
 
 model WorkOrder {

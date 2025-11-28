@@ -24,19 +24,38 @@ export class PlantsService {
       include: {
         // máquinas directamente bajo la planta (si las usas)
         // procesos con sus máquinas y subprocesos
+        controlledDocuments: true,
         processes: {
           include: {
+            controlledDocuments: true,
             machines: {
               include: {
                 documents: true,
+                controlledDocuments: true,
               },
             },
             subprocesses: {
               include: {
+                controlledDocuments: true,
                 machines: {
                   include: {
                     documents: true,
+                    controlledDocuments: true,
                   },
+                },
+                procedures: {
+                  include: {
+                    documents: {
+                      include: { versions: true },
+                    },
+                  },
+                },
+              },
+            },
+            procedures: {
+              include: {
+                documents: {
+                  include: { versions: true },
                 },
               },
             },
@@ -108,23 +127,36 @@ export class PlantsService {
         ),
       ];
 
-      if (machineIds.length) {
-        await tx.machineDocument.deleteMany({
-          where: { machineId: { in: machineIds } },
-        });
-        await tx.machine.deleteMany({ where: { id: { in: machineIds } } });
-      }
+    if (machineIds.length) {
+      await tx.machineDocument.deleteMany({
+        where: { machineId: { in: machineIds } },
+      });
+      await tx.controlledDocument.deleteMany({
+        where: { machineId: { in: machineIds } },
+      });
+      await tx.machine.deleteMany({ where: { id: { in: machineIds } } });
+    }
 
-      if (subprocessIds.length) {
-        await tx.subprocess.deleteMany({ where: { id: { in: subprocessIds } } });
-      }
+    if (subprocessIds.length) {
+      await tx.controlledDocument.deleteMany({
+        where: { subprocessId: { in: subprocessIds } },
+      });
+      await tx.subprocess.deleteMany({ where: { id: { in: subprocessIds } } });
+    }
 
-      if (processIds.length) {
-        await tx.process.deleteMany({ where: { id: { in: processIds } } });
-      }
+    if (processIds.length) {
+      await tx.controlledDocument.deleteMany({
+        where: { processId: { in: processIds } },
+      });
+      await tx.process.deleteMany({ where: { id: { in: processIds } } });
+    }
 
-      await tx.plant.delete({ where: { id } });
+    await tx.controlledDocument.deleteMany({
+      where: { plantId: id },
     });
+
+    await tx.plant.delete({ where: { id } });
+  });
   }
 
   // ---------- PROCESSES ----------
