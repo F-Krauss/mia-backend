@@ -1,9 +1,22 @@
 // src/main.ts
 import * as dotenv from 'dotenv';
-dotenv.config({
-  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
-});
-import 'dotenv/config';
+import { join } from 'path';
+
+// Decide el archivo de env según NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+
+// Carga el archivo desde la carpeta raíz del proyecto (un nivel arriba de dist/)
+const envPath = join(__dirname, '..', envFile);
+dotenv.config({ path: envPath });
+
+// DEBUG: deja esto mientras probamos
+console.log(
+  'Bootstrapping MIA backend',
+  'NODE_ENV=', process.env.NODE_ENV,
+  'envPath=', envPath,
+  'has FIREBASE?', !!process.env.FIREBASE_SERVICE_ACCOUNT,
+);
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
@@ -11,7 +24,6 @@ import * as bodyParser from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Prefix all routes with /api for consistent frontend/backend paths
   app.setGlobalPrefix('api');
 
   // Aumentar límite de tamaño de body
