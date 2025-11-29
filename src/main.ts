@@ -19,7 +19,7 @@ async function bootstrap() {
     'http://localhost:3001',
     'http://192.168.1.13:3000', // IP local dev machine
     'http://127.0.0.1:5173',
-    'https://mia.t-efficiency.com', // o el subdominio que estés usando
+    'https://mia-test.t-efficiency.com', // o el subdominio que estés usando
   ];
 
   const extraAllowedOrigins = (process.env.ALLOWED_ORIGINS ?? '')
@@ -39,7 +39,7 @@ async function bootstrap() {
 
   // Choose a sensible default port based on environment so test/dev doesn't
   // conflict with production. Production: 4000, otherwise: 4001 (local/test).
-  const defaultPort = process.env.NODE_ENV === 'production' ? 4000 : 4001;
+  const defaultPort = process.env.NODE_ENV === 'production' ? 4001 : 4001;
   const port = Number.parseInt(process.env.PORT ?? String(defaultPort), 10);
 
   if (Number.isNaN(port) || port <= 0) {
