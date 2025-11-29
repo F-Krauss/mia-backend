@@ -1,4 +1,5 @@
 // src/main.ts
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
@@ -36,7 +37,15 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = parseInt(process.env.PORT ?? '4000', 10); // nos movemos a 4000
+  // Choose a sensible default port based on environment so test/dev doesn't
+  // conflict with production. Production: 4000, otherwise: 4001 (local/test).
+  const defaultPort = process.env.NODE_ENV === 'production' ? 4000 : 4001;
+  const port = Number.parseInt(process.env.PORT ?? String(defaultPort), 10);
+
+  if (Number.isNaN(port) || port <= 0) {
+    throw new Error(`Invalid PORT value: ${process.env.PORT}`);
+  }
+
   await app.listen(port, '0.0.0.0');
 }
 bootstrap();
