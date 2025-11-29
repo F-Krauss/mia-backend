@@ -44,6 +44,41 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+### Recommended scripts for this repo
+
+This repository provides explicit scripts to avoid accidental port conflicts
+between a production instance (port 4000) and local/test instances.
+
+- `npm run start:test` — starts the server with `NODE_ENV=test` and default
+  `PORT=4001` (use for local testing/dev alongside a production server).
+- `npm run start:prod-fixed` — starts built production `dist` with
+  `NODE_ENV=production` and `PORT=4000`.
+
+Examples:
+```bash
+# development / quick (uses default port logic in src/main.ts)
+npm run start
+
+# explicit test/dev (ensures it uses port 4001)
+npm run start:test
+
+# production (after build)
+npm run build
+npm run start:prod-fixed
+```
+
+### Environment
+Use the provided `.env.example` as a starting point. Copy it to `.env` and
+update values before running in any environment:
+
+```bash
+cp .env.example .env
+# edit .env
+```
+
+These defaults ensure that local/test runs won't bind to port 4000 by default
+and therefore won't conflict with a production process that uses 4000.
+
 ## Run tests
 
 ```bash
