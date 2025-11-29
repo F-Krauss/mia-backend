@@ -40,7 +40,10 @@ async function bootstrap() {
   // Choose a sensible default port based on environment so test/dev doesn't
   // conflict with production. Production: 4000, otherwise: 4001 (local/test).
   const defaultPort = process.env.NODE_ENV === 'production' ? 3001 : 3001;
-  const port = Number.parseInt(process.env.PORT ?? String(defaultPort), 10);
+  const port = Number(process.env.PORT ?? 3001);
+  await app.listen(port);
+
+  // const port = Number.parseInt(process.env.PORT ?? String(defaultPort), 10);
 
   if (Number.isNaN(port) || port <= 0) {
     throw new Error(`Invalid PORT value: ${process.env.PORT}`);
