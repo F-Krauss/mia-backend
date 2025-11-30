@@ -19,10 +19,29 @@ export class CertificationDocumentsService {
     });
   }
 
-  create(dto: CreateCertificationDocumentDto) {
-    return this.prisma.certificationDocument.create({
-      data: this.mapCreateDto(dto),
-    });
+  async create(dto: CreateCertificationDocumentDto) {
+    try {
+      console.log('[CertificationDocumentsService] Creating doc:', {
+        code: dto.code,
+        name: dto.name,
+        version: dto.version,
+        hasFile: !!dto.fileBase64,
+      });
+      const result = await this.prisma.certificationDocument.create({
+        data: this.mapCreateDto(dto),
+      });
+      console.log('[CertificationDocumentsService] Created doc id:', result.id);
+      return result;
+    } catch (error: any) {
+      console.error('[CertificationDocumentsService] Error creating doc:', error?.message || error);
+      // Re-throw with more context for unique constraint violations
+      if (error?.code === 'P2002') {
+        throw new Error(
+          `Ya existe un documento con código "${dto.code}" y versión "${dto.version}". Use un código o versión diferente.`,
+        );
+      }
+      throw error;
+    }
   }
 
   update(id: string, dto: UpdateCertificationDocumentDto) {

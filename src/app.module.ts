@@ -17,6 +17,14 @@ import { DocumentsModule } from './documents/documents.module';
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
+      serveStaticOptions: {
+        setHeaders: (res: any, path: string) => {
+          // Prefer inline display for PDFs so browsers can render them instead of forcing download
+          if (path && path.toLowerCase().endsWith('.pdf')) {
+            res.setHeader('Content-Disposition', 'inline');
+          }
+        },
+      },
     }),
     PrismaModule,
     PlantsModule,

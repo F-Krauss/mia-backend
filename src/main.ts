@@ -5,17 +5,8 @@ import { join } from 'path';
 // Decide el archivo de env según NODE_ENV
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
 
-// Carga el archivo desde la carpeta raíz del proyecto (un nivel arriba de dist/)
 const envPath = join(__dirname, '..', envFile);
 dotenv.config({ path: envPath });
-
-// DEBUG: deja esto mientras probamos
-console.log(
-  'Bootstrapping MIA backend',
-  'NODE_ENV=', process.env.NODE_ENV,
-  'envPath=', envPath,
-  'has FIREBASE?', !!process.env.FIREBASE_SERVICE_ACCOUNT,
-);
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -53,13 +44,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Choose a sensible default port based on environment so test/dev doesn't
-  // conflict with production. Production: 4000, otherwise: 4001 (local/test).
-  const defaultPort = process.env.NODE_ENV === 'production' ? 3001 : 3001;
-  const port = Number(process.env.PORT ?? 3001);
-  await app.listen(port);
-
-  // const port = Number.parseInt(process.env.PORT ?? String(defaultPort), 10);
+  // Default port for the server
+  const port = Number.parseInt(process.env.PORT ?? '3001', 10);
 
   if (Number.isNaN(port) || port <= 0) {
     throw new Error(`Invalid PORT value: ${process.env.PORT}`);

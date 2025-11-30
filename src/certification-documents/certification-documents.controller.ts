@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -23,8 +25,22 @@ export class CertificationDocumentsController {
   }
 
   @Post()
-  create(@Body() dto: CreateCertificationDocumentDto) {
-    return this.certificationDocumentsService.create(dto);
+  async create(@Body() dto: CreateCertificationDocumentDto) {
+    try {
+      return await this.certificationDocumentsService.create(dto);
+    } catch (error: any) {
+      // Surface meaningful error messages to the client
+      if (error?.code === 'P2002') {
+        throw new HttpException(
+          `Ya existe un documento con código "${dto.code}" y versión "${dto.version}".`,
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(
+        error?.message || 'Error al crear documento',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Patch(':id')
