@@ -16,7 +16,8 @@ import { DocumentsModule } from './documents/documents.module';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
+      // Use /api/uploads so the reverse proxy routes it to the backend (not the frontend SPA)
+      serveRoot: '/api/uploads',
       serveStaticOptions: {
         setHeaders: (res: any, path: string) => {
           // Prefer inline display for PDFs so browsers can render them instead of forcing download

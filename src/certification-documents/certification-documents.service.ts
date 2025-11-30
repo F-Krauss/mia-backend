@@ -80,7 +80,7 @@ export class CertificationDocumentsService {
       const filePath = join(dir, filename);
       const base64Data = fileBase64.replace(/^data:.*;base64,/, '');
       writeFileSync(filePath, base64Data, 'base64');
-      return `/uploads/certdocs/${filename}`;
+      return `/api/uploads/certdocs/${filename}`;
     } catch (err) {
       console.error('Error saving certification file', err);
       return null;

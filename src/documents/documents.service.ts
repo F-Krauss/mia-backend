@@ -123,7 +123,7 @@ export class DocumentsService {
       const filePath = join(dir, filename);
       const clean = fileBase64.replace(/^data:.*;base64,/, '');
       writeFileSync(filePath, clean, 'base64');
-      return `/uploads/documents/${filename}`;
+      return `/api/uploads/documents/${filename}`;
     } catch (err) {
       console.error('Error saving document file', err);
       return null;
