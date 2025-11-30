@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -31,8 +33,37 @@ export class DocumentsController {
   }
 
   @Post()
-  create(@Body() dto: CreateDocumentDto) {
-    return this.documentsService.create(dto);
+  async create(@Body() dto: CreateDocumentDto) {
+    try {
+      console.log('[DocumentsController] Creating document:', {
+        code: dto.code,
+        name: dto.name,
+        plantId: dto.plantId,
+        processId: dto.processId,
+        hasFile: !!dto.fileBase64,
+      });
+      const result = await this.documentsService.create(dto);
+      console.log('[DocumentsController] Created document id:', result.id);
+      return result;
+    } catch (error: any) {
+      console.error('[DocumentsController] Error creating document:', error?.message || error);
+      if (error?.code === 'P2025') {
+        throw new HttpException(
+          `No se encontró el registro padre (planta/proceso/máquina). Verifica que exista.`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error?.code === 'P2002') {
+        throw new HttpException(
+          `Ya existe un documento con ese código y versión.`,
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(
+        error?.message || 'Error al crear documento',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Patch(':id')
