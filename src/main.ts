@@ -5,9 +5,10 @@ import { join } from 'path';
 // Decide el archivo de env según NODE_ENV
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
 
-// Carga el archivo desde la carpeta raíz del proyecto (un nivel arriba de dist/)
-const envPath = join(__dirname, '..', envFile);
+// sube dos niveles: dist/src -> dist -> raíz
+const envPath = join(__dirname, '..', '..', envFile);
 dotenv.config({ path: envPath });
+
 
 // DEBUG: deja esto mientras probamos
 console.log(
