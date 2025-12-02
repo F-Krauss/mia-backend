@@ -14,6 +14,7 @@ export class MachinesService {
     return this.prisma.machine.create({
       data: {
         ...rest,
+        id: `machine-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         process: processId ? { connect: { id: processId } } : undefined,
         subprocess: subprocessId ? { connect: { id: subprocessId } } : undefined,
       },
@@ -46,6 +47,7 @@ export class MachinesService {
     // crear registros de documentos
     await this.prisma.machineDocument.createMany({
       data: docs.map((d) => ({
+        id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: d.name,
         mimeType: d.mimeType,
         base64Data: d.base64Data,
@@ -72,9 +74,20 @@ export class MachinesService {
   }
 
   async removeDocument(machineId: string, docId: string) {
-    // opcional: podrías validar que el doc pertenezca a esa máquina
-    return this.prisma.machineDocument.delete({
+    // Check if document exists before trying to delete
+    const doc = await this.prisma.machineDocument.findUnique({
       where: { id: docId },
     });
+    
+    if (!doc) {
+      // Document already deleted or doesn't exist - return success anyway
+      return { success: true, message: 'Document already deleted or not found' };
+    }
+    
+    await this.prisma.machineDocument.delete({
+      where: { id: docId },
+    });
+    
+    return { success: true };
   }
 }

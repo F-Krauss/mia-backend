@@ -42,7 +42,8 @@ export class DocumentsService {
         nextReview: this.parseDate(dto.nextReview),
         owner: dto.owner ?? null,
         fileUrl: savedUrl ?? dto.fileUrl ?? null,
-        fileBase64: savedUrl ? null : dto.fileBase64 ?? null,
+        // Mantener fileBase64 siempre para acceso desde otras máquinas
+        fileBase64: dto.fileBase64 ?? null,
         fileName: dto.fileName ?? null,
         plant: dto.plantId ? { connect: { id: dto.plantId } } : undefined,
         process: dto.processId ? { connect: { id: dto.processId } } : undefined,
@@ -65,7 +66,8 @@ export class DocumentsService {
         nextReview: dto.nextReview !== undefined ? this.parseDate(dto.nextReview) : undefined,
         owner: dto.owner,
         fileUrl: savedUrl ?? dto.fileUrl,
-        fileBase64: savedUrl ? null : dto.fileBase64,
+        // Mantener fileBase64 siempre para acceso desde otras máquinas
+        fileBase64: dto.fileBase64,
         fileName: dto.fileName,
         plant: dto.plantId ? { connect: { id: dto.plantId } } : dto.plantId === null ? { disconnect: true } : undefined,
         process: dto.processId ? { connect: { id: dto.processId } } : dto.processId === null ? { disconnect: true } : undefined,

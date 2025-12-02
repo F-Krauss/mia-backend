@@ -11,6 +11,7 @@ import { ProceduresModule } from './procedures/procedures.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { DocumentsModule } from './documents/documents.module';
+import { AiQueriesModule } from './ai-queries/ai-queries.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { DocumentsModule } from './documents/documents.module';
     CertificationDocumentsModule,
     ProceduresModule,
     DocumentsModule,
+    AiQueriesModule,
   ],
   providers: [
     {
